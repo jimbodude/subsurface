@@ -1,0 +1,60 @@
+How to build Subsurface in a Docker container
+
+Why would you want to do that?
+==========
+- You're on Windows
+- You're on a Mac and don't want to use Homebrew 
+- You don't want to break other fragile build environments
+- You want to be able to build on transient cloud hosts
+
+
+Setup
+==========
+
+0. Make sure your source directories are set up as described in the following
+files:
+  - ../INSTALL
+  - ../scripts/build.sh
+1. Install Docker CE (Community Edition)
+  - https://www.docker.com/get-docker
+2. Start Docker
+  - On Mac, Applications --> Docker
+  - Follow the instructions, providing admin credentials
+3. Build the Docker image
+  - In a terminal:
+  - cd to your "src" directory (`../../` from this file), then run:
+  - $ docker build -f subsurface/dockerbuilder/Dockerfile -t subsurface-build .
+
+
+Run the build
+==========
+
+1. Open a terminal
+2. cd to your "src" directory (`../../` from this file), then run:
+3. $ docker run -it -v `pwd`:/subsurface-src subsurface-build /bin/bash
+  - This gives you an interactive bash shell within the container
+  - The working directory is already set up to be the root source directory
+  - The "-v" part makes the local directory "mount" to the Docker instance
+4. Do normal build stuff
+5. When you're done, simply run "exit" to shut down the container
+
+
+Run the Application
+==========
+
+If you have X11 running, you can configure it to allow connections from the 
+docker instance.
+
+For details for setting this up on Mac, see this article:
+https://fredrikaverpil.github.io/2016/07/31/docker-for-mac-and-gui-applications/
+
+It boils down to:
+1. Get your IP address into a variable called "ip"
+2. Add that IP address to the xhost access control list
+  - $ xhost + $ip
+3. Launch subsurface in the docker container, giving some hints about where to
+find X, and allowing it to run as root
+  $ docker run -it -e DISPLAY=$ip:0 \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -v `pwd`:/subsurface-src subsurface-build \
+  /subsurface-src/subsurface/build/subsurface --allow_run_as_root
