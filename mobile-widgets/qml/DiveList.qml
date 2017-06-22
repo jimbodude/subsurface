@@ -12,24 +12,46 @@ Kirigami.ScrollablePage {
 	objectName: "DiveList"
 	title: qsTr("Dive list")
 	background: Rectangle {
-		color: Kirigami.Theme.viewBackgroundColor
+		color: subsurfaceTheme.backgroundColor
 	}
 	width: subsurfaceTheme.columnWidth
 	property int credentialStatus: manager.credentialStatus
 	property int numDives: diveListView.count
 	property color textColor: subsurfaceTheme.diveListTextColor
+	property int horizontalPadding: Kirigami.Units.gridUnit / 2 - Kirigami.Units.smallSpacing  + 1
+
+	supportsRefreshing: true
+	onRefreshingChanged: {
+		if (refreshing) {
+			if (manager.credentialStatus === QMLManager.VALID || manager.credentialStatus === QMLManager.VALID_EMAIL) {
+				console.log("User pulled down dive list - syncing with cloud storage")
+				detailsWindow.endEditMode()
+				manager.saveChangesCloud(true)
+				console.log("done syncing, turn off spinner")
+				refreshing = false
+			} else {
+				console.log("sync with cloud storage requested, but credentialStatus is " + manager.credentialStatus)
+				console.log("no syncing, turn off spinner")
+				refreshing = false
+			}
+		}
+	}
 
 	Component {
 		id: diveDelegate
 		Kirigami.AbstractListItem {
+			leftPadding: 0
+			topPadding: 0
 			id: innerListItem
 			enabled: true
 			supportsMouseEvents: true
 			checked: diveListView.currentIndex === model.index
 			width: parent.width
+			height: diveListEntry.height + Kirigami.Units.smallSpacing
+			backgroundColor: checked ? subsurfaceTheme.primaryColor : subsurfaceTheme.backgroundColor
+			textColor: checked ? subsurfaceTheme.primaryTextColor : subsurfaceTheme.diveListTextColor
 
 			property real detailsOpacity : 0
-			property int horizontalPadding: Kirigami.Units.gridUnit / 2 - Kirigami.Units.smallSpacing  + 1
 
 			// When clicked, the mode changes to details view
 			onClicked: {
@@ -46,72 +68,58 @@ Kirigami.ScrollablePage {
 				deleteButtonVisible = true
 				timer.restart()
 			}
-
-			Row {
-				width: parent.width
-				height: childrenRect.height + Kirigami.Units.smallSpacing
-				spacing: horizontalPadding
-
-				add: Transition {
-					NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: 400 }
-					NumberAnimation { property: "scale"; from: 0; to: 1.0; duration: 400 }
+			Item {
+				Rectangle {
+					id: leftBarDive
+					width: dive.tripMeta == "" ? 0 : Kirigami.Units.smallSpacing
+					height: diveListEntry.height * 0.8
+					color: subsurfaceTheme.lightPrimaryColor
+					anchors {
+						left: parent.left
+						top: parent.top
+						leftMargin: Kirigami.Units.smallSpacing
+						topMargin: Kirigami.Units.smallSpacing * 2
+						bottomMargin: Kirigami.Units.smallSpacing * 2
+					}
 				}
 				Item {
 					id: diveListEntry
 					width: parent.width - Kirigami.Units.gridUnit * (innerListItem.deleteButtonVisible ? 3 : 1)
 					height: childrenRect.height - Kirigami.Units.smallSpacing
-
+					anchors.left: leftBarDive.right
 					Kirigami.Label {
 						id: locationText
 						text: dive.location
-						font.weight: Font.Light
+						font.weight: Font.Bold
 						elide: Text.ElideRight
 						maximumLineCount: 1 // needed for elide to work at all
 						color: textColor
 						anchors {
 							left: parent.left
-							leftMargin: horizontalPadding
+							leftMargin: horizontalPadding * 2
 							top: parent.top
-							right: dateLabel.left
-						}
-					}
-					Kirigami.Label {
-						id: dateLabel
-						text: dive.date + " " + dive.time
-						font.pointSize: subsurfaceTheme.smallPointSize
-						color: textColor
-						anchors {
 							right: parent.right
-							top: parent.top
 						}
 					}
 					Row {
 						anchors {
-							left: parent.left
-							leftMargin: horizontalPadding
-							right: parent.right
-							rightMargin: horizontalPadding
+							left: locationText.left
+							top: locationText.bottom
 							topMargin: - Kirigami.Units.smallSpacing * 2
 							bottom: numberText.bottom
 						}
+
 						Kirigami.Label {
-							text: qsTr('Depth: ')
+							id: dateLabel
+							text: dive.date + " " + dive.time
+							width: Math.max(locationText.width * 0.45, paintedWidth) // helps vertical alignment throughout listview
 							font.pointSize: subsurfaceTheme.smallPointSize
 							color: textColor
 						}
+						// let's try to show the depth / duration very compact
 						Kirigami.Label {
-							text: dive.depth
+							text: dive.depth + ' / ' + dive.duration
 							width: Math.max(Kirigami.Units.gridUnit * 3, paintedWidth) // helps vertical alignment throughout listview
-							font.pointSize: subsurfaceTheme.smallPointSize
-							color: textColor
-						}
-						Kirigami.Label {
-							text: qsTr('Duration: ')
-							font.pointSize: subsurfaceTheme.smallPointSize
-							color: textColor
-						}
-						Kirigami.Label {
-							text: dive.duration
 							font.pointSize: subsurfaceTheme.smallPointSize
 							color: textColor
 						}
@@ -123,6 +131,7 @@ Kirigami.ScrollablePage {
 						color: textColor
 						anchors {
 							right: parent.right
+							rightMargin: horizontalPadding
 							top: locationText.bottom
 							topMargin: - Kirigami.Units.smallSpacing * 2
 						}
@@ -132,9 +141,13 @@ Kirigami.ScrollablePage {
 					visible: deleteButtonVisible
 					height: diveListEntry.height - Kirigami.Units.smallSpacing
 					width: height - 3 * Kirigami.Units.smallSpacing
-					color: "#FF3030"
+					color: subsurfaceTheme.contrastAccentColor
 					antialiasing: true
 					radius: Kirigami.Units.smallSpacing
+					anchors {
+						left: diveListEntry.right
+						right: parent.right
+					}
 					Kirigami.Icon {
 						anchors {
 							horizontalCenter: parent.horizontalCenter
@@ -169,44 +182,54 @@ Kirigami.ScrollablePage {
 		id: tripHeading
 		Item {
 			width: page.width - Kirigami.Units.gridUnit
-			height: childrenRect.height + Kirigami.Units.smallSpacing * 2 + Math.max(2, Kirigami.Units.gridUnit / 2)
-
-			Kirigami.Heading {
-				id: sectionText
-				text: {
-					// if the tripMeta (which we get as "section") ends in ::-- we know
-					// that there's no trip -- otherwise strip the meta information before
-					// the :: and show the trip location
-					var shownText
-					var endsWithDoubleDash = /::--$/;
-					if (endsWithDoubleDash.test(section) || section === "--") {
-						shownText = ""
-					} else {
-						shownText = section.replace(/.*::/, "")
-					}
-					shownText
-				}
-				visible: text !== ""
+			height: childrenRect.height - Kirigami.Units.smallSpacing
+			Rectangle {
+				id: headingBackground
+				height: section == "" ? 0 : sectionText.height + Kirigami.Units.gridUnit
 				anchors {
-					top: parent.top
 					left: parent.left
-					topMargin: Math.max(2, Kirigami.Units.gridUnit / 2)
-					leftMargin: Kirigami.Units.gridUnit / 2
 					right: parent.right
+					rightMargin: Kirigami.Units.gridUnit * -2
 				}
-				color: textColor
-				level: 2
+				color: subsurfaceTheme.lightPrimaryColor
+				visible: section != ""
+				Kirigami.Label {
+					id: sectionText
+					text: {
+						// if the tripMeta (which we get as "section") ends in ::-- we know
+						// that there's no trip -- otherwise strip the meta information before
+						// the :: and show the trip location
+						var shownText
+						var endsWithDoubleDash = /::--$/;
+						if (endsWithDoubleDash.test(section) || section === "--") {
+							shownText = ""
+						} else {
+							shownText = section.replace(/.*::/, "")
+						}
+						shownText
+					}
+					wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+					visible: text !== ""
+					font.weight: Font.Bold
+					anchors {
+						top: parent.top
+						left: parent.left
+						topMargin: Math.max(2, Kirigami.Units.gridUnit / 2)
+						leftMargin: horizontalPadding * 2
+						right: parent.right
+					}
+					color: subsurfaceTheme.lightPrimaryTextColor
+				}
 			}
 			Rectangle {
 				height: Math.max(2, Kirigami.Units.gridUnit / 12) // we want a thicker line
 				anchors {
-					top: sectionText.bottom
+					bottom: headingBackground.top
 					left: parent.left
-					leftMargin: Kirigami.Units.gridUnit * -2
 					rightMargin: Kirigami.Units.gridUnit * -2
 					right: parent.right
 				}
-				color: subsurfaceTheme.accentColor
+				color: subsurfaceTheme.lightPrimaryColor
 			}
 		}
 	}
@@ -269,6 +292,7 @@ Kirigami.ScrollablePage {
 		section.property: "dive.tripMeta"
 		section.criteria: ViewSection.FullString
 		section.delegate: tripHeading
+		section.labelPositioning: ViewSection.CurrentLabelAtStart | ViewSection.InlineLabels
 		Connections {
 			target: detailsWindow
 			onCurrentIndexChanged: diveListView.currentIndex = detailsWindow.currentIndex

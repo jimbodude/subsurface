@@ -14,33 +14,32 @@ Kirigami.ApplicationWindow {
 
 	header: Kirigami.ApplicationHeader {
 		minimumHeight: 0
-		preferredHeight: Kirigami.Units.gridUnit * (Qt.platform.os == "ios" ? 2 : 1)
+		preferredHeight: Math.round(Kirigami.Units.gridUnit * (Qt.platform.os == "ios" ? 2 : 1.5))
 		maximumHeight: Kirigami.Units.gridUnit * 2
 	}
 	property bool fullscreen: true
 	property alias oldStatus: manager.oldStatus
-	property alias accessingCloud: manager.accessingCloud
+	property alias notificationText: manager.notificationText
 	property QtObject notification: null
 	property bool showingDiveList: false
 	property alias syncToCloud: manager.syncToCloud
 	property alias showPin: manager.showPin
-
-	onAccessingCloudChanged: {
-		// >= 0 for updating cloud, -1 for hide, < -1 for local storage
-		if (accessingCloud >= 0) {
-			// we now keep updating this to show progress, so timing out after 30 seconds is more useful
-			// but should still be very conservative
-			showPassiveNotification("Accessing Subsurface cloud storage " + accessingCloud +"%", 30000);
-		} else if (accessingCloud < -1) {
-			// local storage should be much faster, so timeout of 5 seconds
-			// the offset of 2 is so that things start 0 again
-			showPassiveNotification("Accessing local storage " + -(accessingCloud + 2) +"%", 5000);
+	onNotificationTextChanged: {
+		if (notificationText != "") {
+			// there's a risk that we have a >5 second gap in update events;
+			// still, keep the timeout at 5s to avoid odd unchanging notifications
+			showPassiveNotification(notificationText, 5000)
 		} else {
+			// hiding the notification right away may be a mistake as it hides the last warning / error
 			hidePassiveNotification();
 		}
 	}
 	FontMetrics {
 		id: fontMetrics
+		Component.onCompleted: {
+			console.log("Using the following font: " + fontMetrics.font.family)
+		}
+
 		/* this shouldn't be needed anymore
 		Component.onCompleted: {
 			if (Math.round(rootItem.width / Kirigami.Units.gridUnit) < 20) {
@@ -157,6 +156,7 @@ Kirigami.ApplicationWindow {
 					text: qsTr("Download from DC")
 					enabled: true
 					onTriggered: {
+						downloadFromDc.dcImportModel.clearTable()
 						stackView.push(downloadFromDc)
 					}
 				}
@@ -253,6 +253,27 @@ Kirigami.ApplicationWindow {
 				}
 
 				Kirigami.Action {
+					text: qsTr("Switch to pink theme")
+					onTriggered: {
+						pinkTheme()
+					}
+				}
+
+				Kirigami.Action {
+					text: qsTr("Switch to blue theme")
+					onTriggered: {
+						blueTheme()
+					}
+				}
+
+				Kirigami.Action {
+					text: qsTr("Switch to dark theme")
+					onTriggered: {
+						darkTheme()
+					}
+				}
+
+				Kirigami.Action {
 					text: qsTr("Theme information")
 					onTriggered: {
 						stackView.push(themetest)
@@ -306,17 +327,64 @@ Kirigami.ApplicationWindow {
 		}
 	}
 
+	function blueTheme() {
+		subsurfaceTheme.darkPrimaryColor = "#303F9f"
+		subsurfaceTheme.darkPrimaryTextColor= "#ECECEC"
+		subsurfaceTheme.primaryColor = "#3F51B5"
+		subsurfaceTheme.primaryTextColor = "#ECECEC"
+		subsurfaceTheme.lightPrimaryColor = "#C5CAE9"
+		subsurfaceTheme.lightPrimaryTextColor = "#212121"
+		subsurfaceTheme.backgroundColor = "#eff0f1"
+		subsurfaceTheme.diveListTextColor = subsurfaceTheme.lightPrimaryTextColor
+	}
+
+	function pinkTheme() {
+		subsurfaceTheme.darkPrimaryColor = "#FF1493"
+		subsurfaceTheme.darkPrimaryTextColor = "#ECECEC"
+		subsurfaceTheme.primaryColor = "#FF69B4"
+		subsurfaceTheme.primaryTextColor = "#212121"
+		subsurfaceTheme.lightPrimaryColor = "#FFDDF4"
+		subsurfaceTheme.lightPrimaryTextColor = "#212121"
+		subsurfaceTheme.backgroundColor = "#eff0f1"
+		subsurfaceTheme.diveListTextColor = subsurfaceTheme.lightPrimaryTextColor
+	}
+
+	function darkTheme() {
+		subsurfaceTheme.darkPrimaryColor = "#303F9f"
+		subsurfaceTheme.darkPrimaryTextColor= "#ECECEC"
+		subsurfaceTheme.primaryColor = "#3F51B5"
+		subsurfaceTheme.primaryTextColor = "#ECECEC"
+		subsurfaceTheme.lightPrimaryColor = "#C5CAE9"
+		subsurfaceTheme.lightPrimaryTextColor = "#212121"
+		subsurfaceTheme.backgroundColor = "#000000"
+		subsurfaceTheme.diveListTextColor = subsurfaceTheme.primaryTextColor
+	}
+
 	QtObject {
 		id: subsurfaceTheme
 		property int titlePointSize: Math.round(fontMetrics.font.pointSize * 1.5)
 		property int smallPointSize: Math.round(fontMetrics.font.pointSize * 0.8)
-		property color accentColor: "#2d5b9a"
-		property color shadedColor: "#132744"
-		property color accentTextColor: "#ececec"
-		property color diveListTextColor: "#000000" // the Kirigami theme text color is too light
-		property int columnWidth: Math.round(rootItem.width/(Kirigami.Units.gridUnit*28)) > 0 ? Math.round(rootItem.width / Math.round(rootItem.width/(Kirigami.Units.gridUnit*28))) : rootItem.width
-	}
 
+		property color darkPrimaryColor: "#303F9f"
+		property color darkPrimaryTextColor: "#ECECEC"
+		property color primaryColor: "#3F51B5"
+		property color primaryTextColor: "#ECECEC"
+		property color lightPrimaryColor: "#C5CAE9"
+		property color lightPrimaryTextColor: "#212121"
+		property color contrastAccentColor: "#FF9800" // used for delete button
+
+		property color backgroundColor: "#eff0f1"
+
+		property color diveListTextColor: lightPrimaryTextColor
+
+		property int columnWidth: Math.round(rootItem.width/(Kirigami.Units.gridUnit*28)) > 0 ? Math.round(rootItem.width / Math.round(rootItem.width/(Kirigami.Units.gridUnit*28))) : rootItem.width
+		Component.onCompleted: {
+			Kirigami.Theme.highlightColor = Qt.binding(function() { return darkPrimaryColor })
+			Kirigami.Theme.highlighedTextColor = Qt.binding(function() { return darkPrimaryTextColor })
+			Kirigami.Theme.backgroundColor = Qt.binding(function() { return backgroundColor })
+			Kirigami.Theme.textColor = Qt.binding(function() { return diveListTextColor })
+		}
+	}
 	property Item stackView: pageStack
 	pageStack.initialPage: DiveList {
 		id: diveList
@@ -371,7 +439,6 @@ Kirigami.ApplicationWindow {
 	}
 
 	Component.onCompleted: {
-		Kirigami.Theme.highlightColor = subsurfaceTheme.accentColor
 		manager.finishSetup();
 		rootItem.visible = true
 		diveList.opacity = 1

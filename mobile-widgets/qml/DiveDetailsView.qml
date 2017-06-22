@@ -16,7 +16,7 @@ Item {
 	property real col3Width: gridWidth * 0.30
 
 	width: diveDetailsPage.width - diveDetailsPage.leftPadding - diveDetailsPage.rightPadding
-	height: mainLayout.implicitHeight + bottomLayout.implicitHeight + Kirigami.Units.iconSizes.large
+	height: divePlate.implicitHeight + bottomLayout.implicitHeight + Kirigami.Units.iconSizes.large
 	Rectangle {
 		z: 99
 		color: Kirigami.Theme.textColor
@@ -28,70 +28,107 @@ Item {
 			bottom: parent.bottom
 		}
 	}
-	GridLayout {
-		id: mainLayout
-		anchors {
-			top: parent.top
-			left: parent.left
-			right: parent.right
-			margins: Kirigami.Units.gridUnit
-		}
-		columns: 4
-		rowSpacing: Kirigami.Units.smallSpacing * 2
-		columnSpacing: Kirigami.Units.smallSpacing
-
-		Kirigami.Heading {
-			id: detailsViewHeading
-			Layout.fillWidth: true
+	Item {
+		id: divePlate
+		width: parent.width - Kirigami.Units.gridUnit
+		height: childrenRect.height - Kirigami.Units.smallSpacing
+		anchors.left: parent.left
+		Kirigami.Label {
+			id: locationText
 			text: dive.location
-			font.underline: dive.gps !== ""
-			Layout.columnSpan: 4
-			wrapMode: TextEdit.WrapAtWordBoundaryOrAnywhere
-			Layout.topMargin: Kirigami.Units.largeSpacing
+			font.weight: Font.Bold
+			font.pointSize: subsurfaceTheme.titlePointSize
+			wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+			color: Kirigami.Theme.textColor
+			anchors {
+				left: parent.left
+				top: parent.top
+				right: gpsButton.left
+				margins: Math.round(Kirigami.Units.gridUnit / 2)
+			}
 			MouseArea {
 				anchors.fill: parent
+				enabled: dive.gps_decimal !== ""
 				onClicked: {
 					if (dive.gps_decimal !== "")
 						showMap(dive.gps_decimal)
 				}
 			}
 		}
-		Kirigami.Label {
-			id: dateLabel
-			text: qsTr("Date: ")
-			opacity: 0.6
+		Rectangle {
+			id: gpsButton
+			height: Math.round(1.5 * Kirigami.Units.gridUnit)
+			width: dive.gps == "" ? 0 : buttonText.width + Kirigami.Units.gridUnit
+			color: subsurfaceTheme.darkPrimaryColor
+			antialiasing: true
+			radius: Kirigami.Units.smallSpacing * 2
+			anchors {
+				right: parent.right
+				top: parent.top
+				topMargin: Math.round(Kirigami.Units.gridUnit / 2)
+			}
+			Kirigami.Label {
+				id: buttonText
+				text: qsTr("Map it")
+				color: subsurfaceTheme.darkPrimaryTextColor
+				anchors {
+					horizontalCenter: parent.horizontalCenter
+					verticalCenter: parent.verticalCenter
+				}
+			}
+			MouseArea {
+				anchors.fill: parent
+				enabled: dive.gps_decimal !== ""
+				onClicked: {
+					if (dive.gps_decimal !== "")
+						showMap(dive.gps_decimal)
+				}
+			}
 		}
-		Kirigami.Label {
-			text: dive.date + " " + dive.time
-			wrapMode: TextEdit.WrapAtWordBoundaryOrAnywhere
-			Layout.columnSpan: 2
+		Row {
+			anchors {
+				left: locationText.left
+				top: locationText.bottom
+				bottom: numberText.bottom
+			}
+
+			Kirigami.Label {
+				text: dive.date + " " + dive.time
+				width: Math.max(locationText.width * 0.45, paintedWidth)
+				font.pointSize: subsurfaceTheme.smallPointSize
+				color: subsurfaceTheme.diveListTextColor
+			}
+			// let's try to show the depth / duration very compact
+			Kirigami.Label {
+				text: dive.depth + ' / ' + dive.duration
+				width: Math.max(Kirigami.Units.gridUnit * 3, paintedWidth)
+				font.pointSize: subsurfaceTheme.smallPointSize
+				color: subsurfaceTheme.diveListTextColor
+			}
 		}
 		Kirigami.Label {
 			id: numberText
 			text: "#" + dive.number
-			color: Kirigami.Theme.textColor
-			wrapMode: TextEdit.WrapAtWordBoundaryOrAnywhere
+			font.pointSize: subsurfaceTheme.smallPointSize
+			color: subsurfaceTheme.diveListTextColor
+			anchors {
+				right: parent.right
+				top: locationText.bottom
+			}
 		}
-
-		Kirigami.Label {
-			id: depthLabel
-			text: qsTr("Depth: ")
-			opacity: 0.6
+	}
+	GridLayout {
+		id: bottomLayout
+		anchors {
+			top: divePlate.bottom
+			left: parent.left
+			right: parent.right
+			margins: Math.round(Kirigami.Units.gridUnit / 2)
+			topMargin: Kirigami.Units.gridUnit * 2
 		}
-		Kirigami.Label {
-			text: dive.depth
-			Layout.fillWidth: true
-			wrapMode: TextEdit.WrapAtWordBoundaryOrAnywhere
-		}
-		Kirigami.Label {
-			text: qsTr("Duration: ")
-			opacity: 0.6
-			Layout.alignment: Qt.AlignRight
-		}
-		Kirigami.Label {
-			text: dive.duration
-			wrapMode: TextEdit.WrapAtWordBoundaryOrAnywhere
-		}
+		columns: 3
+		rowSpacing: Kirigami.Units.smallSpacing * 2
+		columnSpacing: Kirigami.Units.smallSpacing
 
 		QMLProfile {
 			id: qmlProfile
@@ -99,13 +136,13 @@ Item {
 			Layout.fillWidth: true
 			Layout.preferredHeight: Layout.minimumHeight
 			Layout.minimumHeight: width * 0.75
-			Layout.columnSpan: 4
+			Layout.columnSpan: 3
 			clip: false
 			Rectangle {
 				color: "transparent"
 				opacity: 0.6
 				border.width: 1
-				border.color: Kirigami.Theme.textColor;
+				border.color: subsurfaceTheme.darkPrimaryColor
 				anchors.fill: parent
 			}
 		}
@@ -113,29 +150,10 @@ Item {
 			id: noProfile
 			visible: dive.noDive
 			Layout.fillWidth: true
-			Layout.columnSpan: 4
+			Layout.columnSpan: 3
 			Layout.margins: Kirigami.Units.gridUnit
 			horizontalAlignment: Text.AlignHCenter
 			text: qsTr("No profile to show")
-		}
-	}
-	GridLayout {
-		id: bottomLayout
-		anchors {
-			top: mainLayout.bottom
-			left: parent.left
-			right: parent.right
-			margins: Math.round(Kirigami.Units.gridUnit / 2)
-		}
-		columns: 3
-		rowSpacing: Kirigami.Units.smallSpacing * 2
-		columnSpacing: Kirigami.Units.smallSpacing
-
-		Kirigami.Heading {
-			Layout.fillWidth: true
-			level: 3
-			text: qsTr("Dive Details")
-			Layout.columnSpan: 3
 		}
 
 		// first row
@@ -181,7 +199,7 @@ Item {
 		}
 
 		Rectangle {
-			color: subsurfaceTheme.accentColor
+			color: subsurfaceTheme.darkPrimaryColor
 			height: 1
 			opacity: 0.5
 			Layout.columnSpan: 3
@@ -234,7 +252,7 @@ Item {
 		}
 
 		Rectangle {
-			color: subsurfaceTheme.accentColor
+			color: subsurfaceTheme.darkPrimaryColor
 			height: 1
 			opacity: 0.5
 			Layout.columnSpan: 3
@@ -276,7 +294,7 @@ Item {
 		}
 
 		Rectangle {
-			color: subsurfaceTheme.accentColor
+			color: subsurfaceTheme.darkPrimaryColor
 			height: 1
 			opacity: 0.5
 			Layout.columnSpan: 3
@@ -284,9 +302,9 @@ Item {
 		}
 
 
-		Kirigami.Heading {
+		Kirigami.Label {
 			Layout.fillWidth: true
-			level: 3
+			opacity: 0.6
 			text: qsTr("Notes")
 			wrapMode: Text.WrapAtWordBoundaryOrAnywhere
 			Layout.columnSpan: 3
@@ -303,7 +321,7 @@ Item {
 		Item {
 			Layout.columnSpan: 3
 			Layout.fillWidth: true
-			Layout.minimumHeight: Kirigami.Units.gridUnit * 3
+			Layout.minimumHeight: Kirigami.Units.gridUnit * 6
 		}
 		Component.onCompleted: {
 			qmlProfile.setMargin(Kirigami.Units.smallSpacing)

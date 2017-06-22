@@ -39,7 +39,7 @@ SUBSURFACE_DESKTOP=OFF
 # Which arch should we build for?
 ARCH=arm
 # Which SDK buildtools revision is used?
-ANDROID_BUILDTOOLS_REVISION=23.0.3
+ANDROID_BUILDTOOLS_REVISION=25.0.3
 
 while [ "$#" -gt 0 ] ; do
 	case "$1" in
@@ -72,7 +72,7 @@ done
 export ARCH
 
 # Configure where we can find things here
-export ANDROID_NDK_ROOT=${ANDROID_NDK_ROOT-$SUBSURFACE_SOURCE/../android-ndk-r13b}
+export ANDROID_NDK_ROOT=${ANDROID_NDK_ROOT-$SUBSURFACE_SOURCE/../android-ndk-r14b}
 
 if [ -n "${QT5_ANDROID+X}" ] ; then
 	echo "Using Qt5 in $QT5_ANDROID"
@@ -100,13 +100,13 @@ else
 fi
 
 # Which versions are we building against?
-SQLITE_VERSION=3130000
+SQLITE_VERSION=3190200
 LIBXML2_VERSION=2.9.4
 LIBXSLT_VERSION=1.1.29
 LIBZIP_VERSION=1.1.3
-LIBGIT2_VERSION=0.24.1
+LIBGIT2_VERSION=0.25.1
 LIBUSB_VERSION=1.0.20
-OPENSSL_VERSION=1.0.2h
+OPENSSL_VERSION=1.0.2l
 LIBFTDI_VERSION=1.3
 
 if [ "$ARCH" = "arm" ] ; then
@@ -144,7 +144,7 @@ else
 fi
 
 if [ ! -e sqlite-autoconf-${SQLITE_VERSION}.tar.gz ] ; then
-	wget http://www.sqlite.org/2016/sqlite-autoconf-${SQLITE_VERSION}.tar.gz
+	wget http://www.sqlite.org/2017/sqlite-autoconf-${SQLITE_VERSION}.tar.gz
 fi
 if [ ! -e sqlite-autoconf-${SQLITE_VERSION} ] ; then
 	tar -zxf sqlite-autoconf-${SQLITE_VERSION}.tar.gz
@@ -243,6 +243,9 @@ fi
 if [ ! -e "$PKG_CONFIG_LIBDIR/libgit2.pc" ] ; then
 	# We don't want to find the HTTP_Parser package of the build host by mistake
 	perl -pi -e 's/FIND_PACKAGE\(HTTP_Parser\)/#FIND_PACKAGE(HTTP_Parser)/' libgit2-${LIBGIT2_VERSION}/CMakeLists.txt
+	# also, with libgit-0.25.1 and ndk-14b we see an odd build failure with a missing rand() symbol
+	# trivial workaround is to just call lrand48()
+	perl -pi -e 's/seed = rand/seed = (int)lrand48/' libgit2-${LIBGIT2_VERSION}/src/cache.c
 	mkdir -p libgit2-build-"$ARCH"
 	pushd libgit2-build-"$ARCH"
 	cmake -DCMAKE_SYSTEM_NAME=Android -DSHA1_TYPE=builtin \
