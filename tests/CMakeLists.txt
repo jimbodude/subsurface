@@ -136,6 +136,7 @@ TEST(TestPicture testpicture.cpp)
 set(TEST_PICTURE TestPicture)
 endif()
 TEST(TestMerge testmerge.cpp)
+TEST(TestCylinderConfig testcylinderconfig.cpp)
 TEST(TestTagList testtaglist.cpp)
 
 if (SUBSURFACE_TARGET_EXECUTABLE MATCHES "DesktopExecutable" AND NOT NO_PRINTING)
@@ -190,6 +191,7 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND}
 	TestRenumber
 	${TEST_PICTURE}
 	TestMerge
+	TestCylinderConfig
 	TestTagList
 	${TEST_PLANNER_SHARED}
 	${TEST_PRINTING}
