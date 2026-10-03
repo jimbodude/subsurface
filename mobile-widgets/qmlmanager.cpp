@@ -448,6 +448,7 @@ void QMLManager::openLocalThenRemote(QString url)
 		qPrefTechnicalDetails::set_show_ccr_setpoint(git_prefs.show_ccr_setpoint);
 		qPrefTechnicalDetails::set_show_ccr_sensors(git_prefs.show_ccr_sensors);
 		qPrefPartialPressureGas::set_po2(git_prefs.pp_graphs.po2);
+		qPrefTechnicalDetails::set_ccr_add_o2_cylinder(git_prefs.ccr_add_o2_cylinder);
 		// the following steps can take a long time, so provide updates
 		setNotificationText(tr("Processing %1 dives").arg(divelog.dives.size()));
 		divelog.process_loaded_dives();
@@ -924,6 +925,7 @@ void QMLManager::consumeFinishedLoad()
 	prefs.show_ccr_setpoint = git_prefs.show_ccr_setpoint;
 	prefs.show_ccr_sensors = git_prefs.show_ccr_sensors;
 	prefs.pp_graphs.po2 = git_prefs.pp_graphs.po2;
+	prefs.ccr_add_o2_cylinder = git_prefs.ccr_add_o2_cylinder;
 	divelog.process_loaded_dives();
 	appendTextToLog(QStringLiteral("%1 dives loaded").arg(divelog.dives.size()));
 	if (divelog.dives.empty())

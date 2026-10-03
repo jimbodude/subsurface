@@ -122,6 +122,9 @@ void set_git_prefs(std::string_view prefs)
 		git_prefs.show_ccr_sensors = 1;
 	if (contains(prefs, "PO2_GRAPH"))
 		git_prefs.pp_graphs.po2 = 1;
+	// AI-generated (Claude)
+	if (contains(prefs, "CCR_ADD_O2_CYLINDER"))
+		git_prefs.ccr_add_o2_cylinder = 1;
 }
 
 /* this sets a usually unused copy of the preferences with the units

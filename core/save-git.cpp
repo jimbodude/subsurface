@@ -840,6 +840,9 @@ static void save_settings(git_repository *repo, struct dir *tree)
 		put_string(&b, "prefs SHOW_SENSORS\n");
 	if (prefs.pp_graphs.po2)
 		put_string(&b, "prefs PO2_GRAPH\n");
+	// AI-generated (Claude)
+	if (prefs.ccr_add_o2_cylinder)
+		put_string(&b, "prefs CCR_ADD_O2_CYLINDER\n");
 
 	blob_insert(repo, tree, &b, "00-Subsurface");
 }
