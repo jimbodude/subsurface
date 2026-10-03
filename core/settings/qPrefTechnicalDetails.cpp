@@ -15,6 +15,7 @@ qPrefTechnicalDetails *qPrefTechnicalDetails::instance()
 void qPrefTechnicalDetails::loadSync(bool doSync)
 {
 	disk_allowOcGasAsDiluent(doSync);
+	disk_ccr_add_o2_cylinder(doSync);
 	disk_calcalltissues(doSync);
 	disk_calcceiling(doSync);
 	disk_calcceiling3m(doSync);
@@ -105,6 +106,8 @@ void qPrefTechnicalDetails::disk_gflow(bool doSync)
 }
 
 HANDLE_PREFERENCE_BOOL(TechnicalDetails, "allowOcGasAsDiluent", allowOcGasAsDiluent);
+
+HANDLE_PREFERENCE_BOOL(TechnicalDetails, "ccr_add_o2_cylinder", ccr_add_o2_cylinder);
 
 HANDLE_PREFERENCE_BOOL(TechnicalDetails, "gf_low_at_maxdepth", gf_low_at_maxdepth);
 

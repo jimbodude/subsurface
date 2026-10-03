@@ -47,6 +47,7 @@ void TestQPrefTechnicalDetails::test_struct_get()
 	prefs.show_pictures_in_profile = true;
 	prefs.show_sac = true;
 	prefs.show_scr_ocpo2 = true;
+	prefs.ccr_add_o2_cylinder = true;
 	prefs.tankbar = true;
 	prefs.vpmb_conservatism = 123;
 	prefs.zoomed_plot = true;
@@ -73,6 +74,7 @@ void TestQPrefTechnicalDetails::test_struct_get()
 	QCOMPARE(tst->show_pictures_in_profile(), prefs.show_pictures_in_profile);
 	QCOMPARE(tst->show_sac(), prefs.show_sac);
 	QCOMPARE(tst->show_scr_ocpo2(), prefs.show_scr_ocpo2);
+	QCOMPARE(tst->ccr_add_o2_cylinder(), prefs.ccr_add_o2_cylinder);
 	QCOMPARE(tst->tankbar(), prefs.tankbar);
 	QCOMPARE(tst->vpmb_conservatism(), prefs.vpmb_conservatism);
 	QCOMPARE(tst->zoomed_plot(), prefs.zoomed_plot);
@@ -107,6 +109,7 @@ void TestQPrefTechnicalDetails::test_set_struct()
 	tst->set_show_pictures_in_profile(false);
 	tst->set_show_sac(false);
 	tst->set_show_scr_ocpo2(false);
+	tst->set_ccr_add_o2_cylinder(false);
 	tst->set_tankbar(false);
 	tst->set_vpmb_conservatism(64);
 	tst->set_zoomed_plot(false);
@@ -133,6 +136,7 @@ void TestQPrefTechnicalDetails::test_set_struct()
 	QCOMPARE(prefs.show_pictures_in_profile, false);
 	QCOMPARE(prefs.show_sac, false);
 	QCOMPARE(prefs.show_scr_ocpo2, false);
+	QCOMPARE(prefs.ccr_add_o2_cylinder, false);
 	QCOMPARE(prefs.tankbar, false);
 	QCOMPARE(prefs.vpmb_conservatism, 64);
 	QCOMPARE(prefs.zoomed_plot, false);
@@ -167,6 +171,7 @@ void TestQPrefTechnicalDetails::test_set_load_struct()
 	tst->set_show_pictures_in_profile(true);
 	tst->set_show_sac(true);
 	tst->set_show_scr_ocpo2(true);
+	tst->set_ccr_add_o2_cylinder(true);
 	tst->set_tankbar(true);
 	tst->set_vpmb_conservatism(64);
 	tst->set_zoomed_plot(true);
@@ -194,6 +199,7 @@ void TestQPrefTechnicalDetails::test_set_load_struct()
 	prefs.show_pictures_in_profile = false;
 	prefs.show_sac = false;
 	prefs.show_scr_ocpo2 = false;
+	prefs.ccr_add_o2_cylinder = false;
 	prefs.tankbar = false;
 	prefs.vpmb_conservatism = 123;
 	prefs.zoomed_plot = false;
@@ -221,6 +227,7 @@ void TestQPrefTechnicalDetails::test_set_load_struct()
 	QCOMPARE(prefs.show_pictures_in_profile, true);
 	QCOMPARE(prefs.show_sac, true);
 	QCOMPARE(prefs.show_scr_ocpo2, true);
+	QCOMPARE(prefs.ccr_add_o2_cylinder, true);
 	QCOMPARE(prefs.tankbar, true);
 	QCOMPARE(prefs.vpmb_conservatism, 64);
 	QCOMPARE(prefs.zoomed_plot, true);
@@ -255,6 +262,7 @@ void TestQPrefTechnicalDetails::test_struct_disk()
 	prefs.show_pictures_in_profile = true;
 	prefs.show_sac = true;
 	prefs.show_scr_ocpo2 = true;
+	prefs.ccr_add_o2_cylinder = true;
 	prefs.tankbar = true;
 	prefs.vpmb_conservatism = 15;
 	prefs.zoomed_plot = true;
@@ -283,6 +291,7 @@ void TestQPrefTechnicalDetails::test_struct_disk()
 	prefs.show_pictures_in_profile = false;
 	prefs.show_sac = false;
 	prefs.show_scr_ocpo2 = false;
+	prefs.ccr_add_o2_cylinder = false;
 	prefs.tankbar = false;
 	prefs.vpmb_conservatism = 123;
 	prefs.zoomed_plot = false;
@@ -309,6 +318,7 @@ void TestQPrefTechnicalDetails::test_struct_disk()
 	QCOMPARE(prefs.show_pictures_in_profile, true);
 	QCOMPARE(prefs.show_sac, true);
 	QCOMPARE(prefs.show_scr_ocpo2, true);
+	QCOMPARE(prefs.ccr_add_o2_cylinder, true);
 	QCOMPARE(prefs.tankbar, true);
 	QCOMPARE(prefs.vpmb_conservatism, 15);
 	QCOMPARE(prefs.zoomed_plot, true);
@@ -461,6 +471,7 @@ void TestQPrefTechnicalDetails::test_signals()
 	QSignalSpy spy26(qPrefTechnicalDetails::instance(), &qPrefTechnicalDetails::vpmb_conservatismChanged);
 	QSignalSpy spy27(qPrefTechnicalDetails::instance(), &qPrefTechnicalDetails::zoomed_plotChanged);
 	QSignalSpy spy28(qPrefTechnicalDetails::instance(), &qPrefTechnicalDetails::infoboxChanged);
+	QSignalSpy spy29(qPrefTechnicalDetails::instance(), &qPrefTechnicalDetails::ccr_add_o2_cylinderChanged);
 
 	prefs.calcalltissues = true;
 	qPrefTechnicalDetails::set_calcalltissues(false);
@@ -501,7 +512,9 @@ void TestQPrefTechnicalDetails::test_signals()
 	prefs.show_sac = true;
 	qPrefTechnicalDetails::set_show_sac(false);
 	prefs.show_scr_ocpo2 = true;
+	prefs.ccr_add_o2_cylinder = true;
 	qPrefTechnicalDetails::set_show_scr_ocpo2(false);
+	qPrefTechnicalDetails::set_ccr_add_o2_cylinder(false);
 	prefs.tankbar = true;
 	qPrefTechnicalDetails::set_tankbar(false);
 	qPrefTechnicalDetails::set_vpmb_conservatism(-64);
@@ -536,6 +549,7 @@ void TestQPrefTechnicalDetails::test_signals()
 	QCOMPARE(spy26.count(), 1);
 	QCOMPARE(spy27.count(), 1);
 	QCOMPARE(spy28.count(), 1);
+	QCOMPARE(spy29.count(), 1);
 
 	QVERIFY(spy1.takeFirst().at(0).toBool() == false);
 	QVERIFY(spy2.takeFirst().at(0).toBool() == false);
@@ -563,6 +577,7 @@ void TestQPrefTechnicalDetails::test_signals()
 	QVERIFY(spy26.takeFirst().at(0).toInt() == -64);
 	QVERIFY(spy27.takeFirst().at(0).toBool() == false);
 	QVERIFY(spy28.takeFirst().at(0).toBool() == false);
+	QVERIFY(spy29.takeFirst().at(0).toBool() == false);
 }
 
 

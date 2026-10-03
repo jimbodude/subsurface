@@ -13,14 +13,22 @@ void TestCylinderConfig::initTestCase()
 	prefs = default_prefs;
 }
 
+void TestCylinderConfig::init()
+{
+	// The preference defaults to off; tests that need it enable it explicitly
+	prefs = default_prefs;
+}
+
 void TestCylinderConfig::cleanup()
 {
 	clear_dive_file_data();
+	prefs = default_prefs;
 }
 
 void TestCylinderConfig::testEnsureO2CylinderAddsForCcr()
 {
 	// A CCR dive with only a diluent cylinder should get an O2 cylinder added
+	prefs.ccr_add_o2_cylinder = true;
 	struct dive d;
 	d.dcs[0].divemode = CCR;
 	cylinder_t dil;
@@ -38,6 +46,7 @@ void TestCylinderConfig::testEnsureO2CylinderAddsForCcr()
 void TestCylinderConfig::testEnsureO2CylinderSkipsForOc()
 {
 	// An OC dive should not get an O2 cylinder added
+	prefs.ccr_add_o2_cylinder = true;
 	struct dive d;
 	d.dcs[0].divemode = OC;
 	cylinder_t cyl;
@@ -52,6 +61,7 @@ void TestCylinderConfig::testEnsureO2CylinderSkipsForOc()
 void TestCylinderConfig::testEnsureO2CylinderIdempotent()
 {
 	// If an O2 cylinder already exists, don't add another
+	prefs.ccr_add_o2_cylinder = true;
 	struct dive d;
 	d.dcs[0].divemode = CCR;
 	cylinder_t o2;
@@ -68,8 +78,31 @@ void TestCylinderConfig::testEnsureO2CylinderIdempotent()
 	QCOMPARE((int)d.cylinders.size(), 2);
 }
 
+void TestCylinderConfig::testEnsureO2CylinderDisabledByDefault()
+{
+	// The preference is off by default: a CCR dive must be left untouched
+	QVERIFY(!default_prefs.ccr_add_o2_cylinder);
+	QVERIFY(!prefs.ccr_add_o2_cylinder);
+	struct dive d;
+	d.dcs[0].divemode = CCR;
+	cylinder_t dil;
+	dil.gasmix.o2 = 210_permille;
+	dil.cylinder_use = DILUENT;
+	d.cylinders.push_back(std::move(dil));
+
+	d.ensure_o2_cylinder();
+	QCOMPARE((int)d.cylinders.size(), 1);
+
+	// Turning the preference on makes the same dive get an O2 cylinder
+	prefs.ccr_add_o2_cylinder = true;
+	d.ensure_o2_cylinder();
+	QCOMPARE((int)d.cylinders.size(), 2);
+	QCOMPARE(d.cylinders[1].cylinder_use, OXYGEN);
+}
+
 void TestCylinderConfig::testParsedCcrDiveGetsO2Cylinder()
 {
+	prefs.ccr_add_o2_cylinder = true;
 	// Load a file with CCR dives and verify every CCR dive has an O2 cylinder.
 	// The test file abitofeverything.ssrf has CCR dives — dive 35 has only
 	// a diluent cylinder. After fixup, ensure_o2_cylinder should have added one.

@@ -8,6 +8,7 @@
 class qPrefTechnicalDetails : public QObject {
 	Q_OBJECT
 	Q_PROPERTY(bool allowOcGasAsDiluent READ allowOcGasAsDiluent WRITE set_allowOcGasAsDiluent NOTIFY allowOcGasAsDiluentChanged)
+	Q_PROPERTY(bool ccr_add_o2_cylinder READ ccr_add_o2_cylinder WRITE set_ccr_add_o2_cylinder NOTIFY ccr_add_o2_cylinderChanged)
 	Q_PROPERTY(bool calcalltissues READ calcalltissues WRITE set_calcalltissues NOTIFY calcalltissuesChanged)
 	Q_PROPERTY(bool calcceiling READ calcceiling WRITE set_calcceiling NOTIFY calcceilingChanged)
 	Q_PROPERTY(bool calcceiling3m READ calcceiling3m WRITE set_calcceiling3m NOTIFY calcceiling3mChanged)
@@ -47,6 +48,7 @@ public:
 
 public:
 	static bool allowOcGasAsDiluent() { return prefs.allowOcGasAsDiluent; }
+	static bool ccr_add_o2_cylinder() { return prefs.ccr_add_o2_cylinder; }
 	static bool calcalltissues() { return prefs.calcalltissues; }
 	static bool calcceiling() { return prefs.calcceiling; }
 	static bool calcceiling3m() { return prefs.calcceiling3m; }
@@ -78,6 +80,7 @@ public:
 
 public slots:
 	static void set_allowOcGasAsDiluent(bool value);
+	static void set_ccr_add_o2_cylinder(bool value);
 	static void set_calcalltissues(bool value);
 	static void set_calcceiling(bool value);
 	static void set_calcceiling3m(bool value);
@@ -109,6 +112,7 @@ public slots:
 
 signals:
 	void allowOcGasAsDiluentChanged(bool value);
+	void ccr_add_o2_cylinderChanged(bool value);
 	void calcalltissuesChanged(bool value);
 	void calcceilingChanged(bool value);
 	void calcceiling3mChanged(bool value);
@@ -142,6 +146,7 @@ private:
 	qPrefTechnicalDetails() {}
 
 	static void disk_allowOcGasAsDiluent(bool doSync);
+	static void disk_ccr_add_o2_cylinder(bool doSync);
 	static void disk_calcalltissues(bool doSync);
 	static void disk_calcceiling(bool doSync);
 	static void disk_calcceiling3m(bool doSync);

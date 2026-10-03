@@ -103,6 +103,7 @@ preferences::preferences() :
 	zoomed_plot(false),
 	infobox(true),
 	allowOcGasAsDiluent(false),
+	ccr_add_o2_cylinder(false),
 	coordinates_traditional(true),
 	unit_system(METRIC),
 	units(SI_UNITS)

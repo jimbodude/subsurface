@@ -9,11 +9,13 @@ class TestCylinderConfig : public TestBase {
 	Q_OBJECT
 private slots:
 	void initTestCase();
+	void init();
 	void cleanup();
 
 	void testEnsureO2CylinderAddsForCcr();
 	void testEnsureO2CylinderSkipsForOc();
 	void testEnsureO2CylinderIdempotent();
+	void testEnsureO2CylinderDisabledByDefault();
 	void testParsedCcrDiveGetsO2Cylinder();
 };
 

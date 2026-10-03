@@ -1082,11 +1082,14 @@ void dive::fixup_dive_dc(struct divecomputer &dc)
 }
 
 // AI-generated (Claude)
-/* CCR dives always have an O2 supply cylinder. If the dive computer
+/* If the "add oxygen cylinder to imported CCR dives" preference is set,
+ * make sure CCR dives have an O2 supply cylinder. If the dive computer
  * didn't report one (e.g., Shearwater does not include the O2 supply
  * in its gas list), add a default 100% O2 cylinder. */
 void dive::ensure_o2_cylinder()
 {
+	if (!prefs.ccr_add_o2_cylinder)
+		return;
 	if (dcs.empty() || dcs[0].divemode != CCR)
 		return;
 	bool has_o2_cyl = std::any_of(cylinders.begin(), cylinders.end(),

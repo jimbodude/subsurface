@@ -204,6 +204,7 @@ struct preferences {
 	bool                        zoomed_plot;
 	bool                        infobox;
 	bool                        allowOcGasAsDiluent;
+	bool                        ccr_add_o2_cylinder;
 
 	// ********** Units **********
 	bool                    coordinates_traditional;
