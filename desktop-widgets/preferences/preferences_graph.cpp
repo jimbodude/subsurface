@@ -52,6 +52,7 @@ void PreferencesGraph::refreshSettings()
 
 	ui->show_icd->setChecked(prefs.show_icd);
 	ui->allowOcGasAsDiluent->setChecked(prefs.allowOcGasAsDiluent);
+	ui->ccr_add_o2_cylinder->setChecked(prefs.ccr_add_o2_cylinder);
 }
 
 void PreferencesGraph::syncSettings()
@@ -79,6 +80,7 @@ void PreferencesGraph::syncSettings()
 	qPrefTechnicalDetails::set_show_icd(ui->show_icd->isChecked());
 	qPrefTechnicalDetails::set_display_deco_mode(ui->vpmb->isChecked() ? VPMB : BUEHLMANN);
 	qPrefTechnicalDetails::set_allowOcGasAsDiluent(ui->allowOcGasAsDiluent->isChecked());
+	qPrefTechnicalDetails::set_ccr_add_o2_cylinder(ui->ccr_add_o2_cylinder->isChecked());
 }
 
 static const char *danger_gf(int gf)
